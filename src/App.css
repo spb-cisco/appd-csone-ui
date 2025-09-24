@@ -1,0 +1,15 @@
+/* AppDynamics Sentinel UI - Main App Styles */
+
+/* Reset and normalize */
+* {
+  box-sizing: border-box;
+}
+
+/* Additional app-specific styles can be added here */
+.app-additional-content {
+  margin: 20px 0;
+  padding: 20px;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e1e5e9;
+}

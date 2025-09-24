@@ -1,0 +1,46 @@
+{
+  "name": "appdsentinel-csone-ui",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "eslint .",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@magnetic/badge": "^39.0.2",
+    "@magnetic/button": "^39.0.2",
+    "@magnetic/card": "^39.0.2",
+    "@magnetic/charts": "^39.0.2",
+    "@magnetic/container": "^39.0.2",
+    "@magnetic/divider": "^39.0.2",
+    "@magnetic/flex": "^39.0.2",
+    "@magnetic/heading": "^39.0.2",
+    "@magnetic/health-card": "^39.0.2",
+    "@magnetic/icons": "^39.0.2",
+    "@magnetic/input": "^39.0.2",
+    "@magnetic/key-value": "^39.0.2",
+    "@magnetic/link": "^39.0.2",
+    "@magnetic/table": "^39.0.2",
+    "@magnetic/tabs": "^39.0.2",
+    "@magnetic/text": "^39.0.2",
+    "@magnetic/view-switcher": "^39.0.2",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.36.0",
+    "@types/react": "^17.0.65",
+    "@types/react-dom": "^17.0.20",
+    "@vitejs/plugin-react": "^5.0.3",
+    "eslint": "^9.36.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.20",
+    "globals": "^16.4.0",
+    "typescript": "~5.8.3",
+    "typescript-eslint": "^8.44.0",
+    "vite": "^7.1.7"
+  }
+}

@@ -1,0 +1,206 @@
+import React, { useState } from 'react';
+import { Button } from '@magnetic/button';
+import { Text } from '@magnetic/text';
+import { Heading } from '@magnetic/heading';
+import { Link } from '@magnetic/link';
+import { Input } from "@magnetic/input";
+import { Card } from '@magnetic/card';
+import { Flex } from "@magnetic/flex";
+import { Container } from "@magnetic/container";
+import { Table } from "@magnetic/table";
+import './EnvironmentPanel.css';
+
+interface EnvironmentData {
+  accountInfo: {
+    controller: string;
+    accountId: string;
+    host: string;
+    sshIp: string;
+    version: string;
+    globalName: string;
+    eumName: string;
+    dedicated: boolean;
+    license: string;
+  };
+  settings: {
+    timezone: string;
+    retention: string;
+    maintWindow: string;
+    sso: boolean;
+  };
+  limits: {
+    applications: number;
+    agents: number;
+    dbCollectors: number;
+    eumApps: number;
+  };
+  jiras: Array<{
+    id: string;
+    title: string;
+  }>;
+  clusters: {
+    gan: string[];
+    eum: string[];
+  };
+}
+
+interface EnvironmentPanelProps {
+  data?: EnvironmentData;
+  onCommand?: (command: string) => void;
+}
+
+const EnvironmentPanel: React.FC<EnvironmentPanelProps> = ({ 
+  data = {
+    accountInfo: {
+      controller: 'controllerces.saas.appdynamics.com',
+      accountId: '123456',
+      host: 'pdx-p-con-207',
+      sshIp: '10.1.2.3',
+      version: '23.9.1',
+      globalName: 'controllerces',
+      eumName: 'eum-controllerces',
+      dedicated: true,
+      license: 'Premium / 500 Agents'
+    },
+    settings: { timezone: 'UTC', retention: '30 days', maintWindow: 'Sun 02:00–04:00 UTC', sso: true },
+    limits: { applications: 100, agents: 500, dbCollectors: 20, eumApps: 10 },
+    jiras: [
+      { id: 'JIRA-12345', title: 'Login issue' },
+      { id: 'JIRA-12346', title: 'DB timeout' }
+    ],
+    clusters: { gan: ['eks1', 'eks2'], eum: ['eum-eks1', 'eum-eks2'] }
+  }
+}) => {
+  const [sqlQuery, setSqlQuery] = useState('');
+  const [sqlResult, setSqlResult] = useState('');
+
+  const handleSqlSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!sqlQuery.trim()) return;
+    setSqlResult(`id | name  | email                \n---+-------+----------------------\n1  | John  | john@example.com     \n2  | Alice | alice@example.com`);
+  };
+
+  return (
+    <Container>
+      <Flex direction="vertical" gap={24}>
+        <Container>
+          <Flex align="center" gap={24} justify="space-between">
+            <Flex direction="vertical" gap={8}>
+              <Heading>Controller Snapshot</Heading>
+              <Text color="light" align="left" size="p4" weight="regular">
+                Unified snapshot of controller environment, limits, JIRAs and clusters.
+              </Text>
+            </Flex>
+            <Flex gap={12} id="input-contoller">
+              <Input.Autocomplete
+                hiddenLabel
+                label="Label"
+                style={{ minWidth: '900px' }}
+                placeholder="Enter Host name or Controller account name"
+                onChange={function Ki() { }}
+                onClear={function Ki() { }}
+                options={['controllerces.saas.appdynamics.com', 'dotnetces.saas.appdynamics.com', 'farm.saas.appdynamics.com']}
+                value=""
+              />
+              <Button type="submit" variant="primary">Submit</Button>
+            </Flex>
+          </Flex>
+        </Container>       
+        <Flex direction="horizontal" gap={24}>          
+          
+          <Container>
+            <Flex direction="vertical" gap={8}>
+             <Flex direction="vertical" gap={8}>
+                    <Flex align="center" direction="horizontal" gap={12}>
+                        <Heading>Account Info</Heading>
+                    </Flex>
+                    <Text>
+                        The controller details for the controller: controllerces
+                    </Text>
+                </Flex>
+                <Flex direction="vertical" gap={24}>
+              <Table
+                columns={[
+                  { accessorKey: 'property', header: 'Property' },
+                  { accessorKey: 'value', header: 'Value' }
+                ]}
+                data={[
+                  { property: 'Controller', value: <Link href={`https://${data.accountInfo.controller}`} target="_blank" rel="noopener">{data.accountInfo.controller}</Link> },
+                  { property: 'Account Id', value: data.accountInfo.accountId },
+                  { property: 'Host', value: data.accountInfo.host },
+                  { property: 'SSH IP', value: data.accountInfo.sshIp },
+                  { property: 'Version', value: data.accountInfo.version },
+                  { property: 'Global Name', value: data.accountInfo.globalName },
+                  { property: 'EUM Name', value: data.accountInfo.eumName },
+                  { property: 'Dedicated', value: data.accountInfo.dedicated ? 'Yes' : 'No' },
+                  { property: 'License', value: data.accountInfo.license }
+                ]}
+              />
+              </Flex>
+            </Flex>
+          </Container>
+
+          <Container>
+            <Flex direction="vertical" gap={8}>
+                
+              <Flex direction="vertical" gap={8}>
+                    <Flex align="center" direction="horizontal" gap={12}>
+                        <Heading>Limits</Heading>
+                    </Flex>
+                    <Text>
+                        Limits data for controller: controllerces
+                    </Text>
+                </Flex>
+                <Flex direction="vertical" gap={24}>
+              <Table
+                columns={[
+                  { accessorKey: 'resource', header: 'Resource' },
+                  { accessorKey: 'limit', header: 'Limit' }
+                ]}
+                data={[
+                  { resource: 'Applications', limit: data.limits.applications },
+                  { resource: 'Agents', limit: data.limits.agents },
+                  { resource: 'DB Collectors', limit: data.limits.dbCollectors },
+                  { resource: 'EUM Apps', limit: data.limits.eumApps }
+                ]}
+              />
+              </Flex>
+            </Flex>
+          </Container>
+          
+          <Container id="jiras-section">
+            <Flex direction="vertical" gap={8}>
+                <Flex direction="vertical" gap={8}>
+                    <Flex align="center" direction="horizontal" gap={12}>
+                        <Heading>JIRAs (P1)</Heading>
+                    </Flex>
+                    <Text>
+                        Top 5 P0/P1 PRE/INC JIRAs, ordered by priority & creation date in descending order.
+                    </Text>
+                </Flex>
+
+            <Flex direction="vertical" gap={24}>
+              <Table
+                columns={[
+                  { accessorKey: 'id', header: 'JIRA ID' },
+                  { accessorKey: 'title', header: 'Title' }
+                ]}
+                data={data.jiras.map(jira => ({
+                  id: jira.id,
+                  title: jira.title
+                }))}
+              />
+              <Text color="light" size="p3">For full list run: jira top / jira wfr</Text>
+            </Flex>
+            </Flex>
+          </Container>
+
+        </Flex>    
+      </Flex>
+      
+      </Container>
+   
+  );
+};
+
+export default EnvironmentPanel;

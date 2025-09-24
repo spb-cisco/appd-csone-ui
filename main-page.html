@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Cisco CSONE – Case Management</title>
+  <meta name="description" content="Cisco Customer Support Online (CSONE) Case Management Interface" />
+  <style>
+    :root {
+      --topbar-height: 60px;
+      --sidebar-width: 100px;
+      --bg: #f8f9fa;
+      --surface: #ffffff;
+      --surface-alt: #f8fafc;
+      --border: #e1e5e9;
+      --border-strong: #c8d0da;
+      --text: #212529;
+      --text-dim: #6c757d;
+      --text-muted: #868e96;
+      --cisco-blue: #0073e6;
+      --cisco-dark-blue: #005bb5;
+      --cisco-red: #ff6b6b;
+      --cisco-green: #51cf66;
+      --cisco-orange: #ff8c42;
+      --accent: #0073e6;
+      --accent-alt: #005bb5;
+      --danger: #dc3545;
+      --warn: #ffc107;
+      --success: #28a745;
+      --info: #17a2b8;
+      --radius-sm: 4px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+      --shadow-md: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
+      --mono: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    }
+    * { box-sizing:border-box; }
+    body { margin:0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background:var(--bg); color:var(--text-dim); -webkit-font-smoothing:antialiased; font-size: 14px; }
+    h1,h2,h3,h4 { font-weight:600; margin:0; color:var(--text); }
+    a { color:var(--accent); text-decoration:none; }
+    a:hover { text-decoration:underline; }
+
+    /* Top Bar - Cisco Style */
+    header.topbar { 
+      position:sticky; top:0; z-index:50; 
+      height:var(--topbar-height); 
+      background:#ffffff; 
+      border-bottom: 1px solid #e1e5e9;
+      display:flex; align-items:center; 
+      padding:0 24px; 
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
+    }
+    .cisco-logo { 
+      display:flex; align-items:center; gap:12px; 
+      font-size:16px; font-weight:700; 
+      color:#005073; 
+      margin-right: 24px;
+    }
+    .cisco-logo svg { width:32px; height:20px; }
+    .product-name { 
+      font-size:16px; font-weight:600; 
+      color:#005073; 
+      margin-right: auto;
+    }
+    .confidential-banner {
+      background: #ff4444;
+      color: white;
+      padding: 4px 12px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      margin-right: 16px;
+    }
+    .search-area {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-right: 16px;
+    }
+    .search-input {
+      padding: 8px 12px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 14px;
+      width: 300px;
+    }
+    .top-actions { 
+      display:flex; gap:12px; align-items:center; 
+    }
+    .icon-btn {
+      width: 32px;
+      height: 32px;
+      border: none;
+      background: transparent;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: #666;
+    }
+    .icon-btn:hover {
+      background: #f1f3f4;
+    }
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .user-info:hover {
+      background: #f1f3f4;
+    }
+
+    /* Layout */
+    .workspace { display:grid; grid-template-columns: var(--sidebar-width) 1fr; min-height:calc(100vh - var(--topbar-height)); }
+    
+    aside.sidebar { 
+      background:#f8f9fa; 
+      border-right: 1px solid #e1e5e9;
+      padding:16px 0; 
+      display:flex; 
+      flex-direction:column; 
+      align-items:center; 
+      gap:8px; 
+    }
+    .nav-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      margin-bottom: 16px;
+    }
+    .nav-btn { 
+      width:60px; height:60px; 
+      border-radius:var(--radius-md); 
+      background:transparent; 
+      border: none;
+      display:flex; 
+      flex-direction: column;
+      align-items:center; 
+      justify-content:center; 
+      cursor:pointer; 
+      gap: 4px;
+      color: #666;
+      font-size: 10px;
+      font-weight: 500;
+    }
+    .nav-btn svg { width:24px; height:24px; }
+    .nav-btn:hover { background:#e9ecef; }
+    .nav-btn.active { 
+      background:#e3f2fd; 
+      color: var(--cisco-blue);
+    }
+
+    main.main-area { padding:24px; overflow-y: auto; }
+    @media (max-width:980px){ main.main-area { padding:20px; } }
+    @media (max-width:640px){ .workspace { grid-template-columns:80px 1fr; } main.main-area { padding:16px; } }
+
+    /* Case Header */
+    .case-header { 
+      background:var(--surface); 
+      border:1px solid var(--border); 
+      border-radius:var(--radius-lg); 
+      padding:20px 24px; 
+      box-shadow:var(--shadow-sm); 
+      margin-bottom: 16px;
+    }
+    
+    .case-top-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 16px;
+    }
+    
+    .case-left {
+      flex: 1;
+    }
+    
+    .case-badges {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    
+    .status-badge {
+      background: #1976d2;
+      color: white;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    
+    .case-id {
+      background: #f5f5f5;
+      color: #666;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    
+    .age-badge {
+      background: #e3f2fd;
+      color: #1976d2;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    
+    .case-title-text {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 16px;
+      line-height: 1.4;
+    }
+    
+    .case-right {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .status-pill {
+      background: #ffebee;
+      color: #c62828;
+      padding: 6px 12px;
+      border-radius: 16px;
+      font-size: 12px;
+      font-weight: 500;
+      border: 1px solid #ffcdd2;
+    }
+    
+    .action-buttons {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .btn-update {
+      background: var(--cisco-blue);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    
+    .btn-add-note {
+      background: var(--cisco-blue);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    
+    .case-metadata {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px 24px;
+      background: #f8f9fa;
+      padding: 16px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+    }
+    
+    .meta-section {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    
+    .meta-header {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #4a5568;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .meta-content {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 13px;
+    }
+    
+    .meta-item {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .meta-label {
+      font-weight: 600;
+      color: #4a5568;
+      min-width: 60px;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .meta-value {
+      color: var(--text);
+    }
+    
+    .tag-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      padding: 16px 0 8px;
+      border-top: 1px solid #e1e5e9;
+    }
+    
+    .tag-chip {
+      background: #f1f3f4;
+      color: #5f6368;
+      padding: 6px 12px;
+      border-radius: 16px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    
+    .tag-chip:hover {
+      background: #e8eaed;
+    }
+
+    /* Tabs */
+    .tabs-container {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+    }
+    
+    .tabs { 
+      display:flex; 
+      border-bottom:1px solid var(--border); 
+      background: #f8f9fa;
+      border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    }
+    
+    .tab-btn { 
+      background:transparent; 
+      border:0; 
+      padding:16px 24px; 
+      font-size:14px; 
+      font-weight:500; 
+      color:#666; 
+      cursor:pointer; 
+      position:relative; 
+      border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .tab-btn.active { 
+      color:var(--cisco-blue); 
+      background: white;
+      border-bottom: 3px solid var(--cisco-blue);
+    }
+    
+    .tab-btn:hover { 
+      color:var(--cisco-blue); 
+      background: white;
+    }
+
+    .tab-panels { 
+      padding:24px; 
+      min-height: 400px;
+    }
+    
+    .tab-panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    
+    .tab-panel-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text);
+    }
+    
+    .tab-panel-actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    
+    .filter-input {
+      padding: 8px 12px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 14px;
+      width: 200px;
+    }
+    
+    .create-btn {
+      background: var(--cisco-blue);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    
+    .summary-badges {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    
+    .summary-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    
+    .summary-badge.status { background: #e8f5e8; color: #2e7d32; }
+    .summary-badge.quality { background: #e3f2fd; color: #1976d2; }
+    .summary-badge.health { background: #fff3e0; color: #f57c00; }
+    .summary-badge.sentiment { background: #f3e5f5; color: #7b1fa2; }
+    
+    .info-notice {
+      background: #e3f2fd;
+      border: 1px solid #bbdefb;
+      border-radius: 8px;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 14px;
+      color: #1976d2;
+    }
+    
+    .info-notice a {
+      color: #1976d2;
+      font-weight: 500;
+    }
+
+    /* Panel styles from AppD Support Sentinel */
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      padding: 32px 38px 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+      position: relative;
+      margin-bottom: 20px;
+    }
+    .panel-header {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      gap: 24px;
+    }
+    .panel-title {
+      font-size: 1.9rem;
+      font-weight: 600;
+      margin: 0;
+      color: var(--text);
+      letter-spacing: .5px;
+    }
+    .panel-sub {
+      max-width: 640px;
+      font-size: .95rem;
+      line-height: 1.45;
+      color: #556275;
+    }
+    .command-bar {
+      display: flex;
+      gap: 12px;
+      flex: 1;
+      min-width: 320px;
+      align-items: center;
+    }
+    .command-bar input {
+      flex: 1;
+      padding: 12px 16px 12px 18px;
+      border: 1px solid var(--border);
+      background: #fafbfc;
+      border-radius: 14px;
+      font-size: 0.95rem;
+      transition: border .18s, background .18s, box-shadow .18s;
+    }
+    .command-bar input:focus {
+      outline: none;
+      border-color: var(--accent);
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(74,144,226,0.25);
+    }
+    .divider-row {
+      height: 1px;
+      background: linear-gradient(90deg, #fff, var(--border), #fff);
+      margin: 4px 0 4px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 28px 40px;
+      width: 100%;
+    }
+    .block {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      min-width: 0;
+    }
+    .block h3 {
+      margin: 0;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-weight: 600;
+      color: #4a5568;
+    }
+    .kv-list {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      font-size: 0.92rem;
+      line-height: 1.5;
+    }
+    .kv-list li {
+      padding: 2px 0;
+      display: flex;
+      gap: 6px;
+      align-items: flex-start;
+    }
+    .kv-term {
+      font-weight: 600;
+      color: #4a5568;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .link {
+      color: var(--accent);
+      text-decoration: none;
+    }
+    .link:hover {
+      text-decoration: underline;
+    }
+    .jira-list {
+      margin: 0;
+      padding-left: 16px;
+      font-size: .9rem;
+    }
+    .jira-list li {
+      padding: 2px 0;
+    }
+    .sql-block form {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .sql-input {
+      flex: 1;
+      min-width: 260px;
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-family: var(--mono);
+      font-size: .8rem;
+      background: #fafbfc;
+    }
+    .sql-input:focus {
+      outline: none;
+      border-color: var(--accent);
+      background: #fff;
+      box-shadow: 0 0 0 2px rgba(74,144,226,.2);
+    }
+    .sql-result {
+      margin-top: 8px;
+      background: #f0f3f8;
+      border: 1px solid var(--border);
+      padding: 10px 12px;
+      border-radius: 10px;
+      font-family: var(--mono);
+      font-size: .75rem;
+      white-space: pre;
+      line-height: 1.4;
+      display: none;
+    }
+    .foot-note {
+      font-size: .7rem;
+      color: #7b8696;
+      margin-top: 4px;
+    }
+    .responsive-span-2 {
+      grid-column: span 2;
+    }
+    .live-output {
+      margin-top: 4px;
+      background: #101826;
+      color: #d7e4f2;
+      font-family: var(--mono);
+      padding: 14px 16px;
+      border-radius: 14px;
+      font-size: .75rem;
+      line-height: 1.45;
+      max-height: 180px;
+      overflow: auto;
+      border: 1px solid #273142;
+    }
+    .live-output::-webkit-scrollbar {
+      width: 8px;
+    }
+    .live-output::-webkit-scrollbar-thumb {
+      background: #2f3b4c;
+      border-radius: 4px;
+    }
+    .sr-only {
+      position: absolute;
+      left: -9999px;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+    }
+
+    /* Hidden by default (only Summary active) */
+    .tab-panel { display:none; animation: fade .25s ease; }
+    .tab-panel.active { display:flex; flex-direction:column; gap:20px; }
+    @keyframes fade { from { opacity:0; transform: translateY(6px); } to { opacity:1; transform:translateY(0);} }
+
+    footer.page-foot { margin-top:60px; font-size:.6rem; color:#6a7a88; text-align:center; padding:24px 10px 32px; }
+  </style>
+</head>
+<body>
+  <header class="topbar" role="banner">
+    <div class="cisco-logo">
+      <svg viewBox="0 0 64 40" fill="#005073">
+        <path d="M8 12h4v16H8zm8-4h4v24h-4zm8 8h4v8h-4zm8-8h4v24h-4zm8 4h4v16h-4zm8-8h4v32h-4z"/>
+      </svg>
+      <span>cisco</span>
+    </div>
+    <div class="product-name">Quicker CSONE</div>
+    <div class="confidential-banner">CISCO HIGHLY CONFIDENTIAL</div>
+    <div class="search-area">
+      <input type="text" class="search-input" placeholder="🔍 Open SR, Bug, RMA, BEMS" />
+    </div>
+    <div class="top-actions">
+      <button class="icon-btn">🔔</button>
+      <button class="icon-btn">⚙️</button>
+      <button class="icon-btn">📋</button>
+      <button class="icon-btn">🔄</button>
+      <div class="user-info">
+        <span>👤 soubera</span>
+        <span>TAC Engineer ▼</span>
+      </div>
+    </div>
+  </header>
+  <div class="workspace">
+    <aside class="sidebar" aria-label="Side Navigation">
+      <div class="nav-section">
+        <div class="nav-btn active">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+          <span>Home</span>
+        </div>
+      </div>
+      <div class="nav-section">
+        <div class="nav-btn">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+          <span>Details</span>
+        </div>
+      </div>
+      <div class="nav-section">
+        <div class="nav-btn">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4zm2 2H5V5h14v14z"/></svg>
+          <span>Histogram</span>
+        </div>
+      </div>
+      <div class="nav-section">
+        <div class="nav-btn">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          <span>Insights</span>
+        </div>
+      </div>
+      <div class="nav-section">
+        <div class="nav-btn">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z"/></svg>
+          <span>Product</span>
+        </div>
+      </div>
+      <div class="nav-section">
+        <div class="nav-btn">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L9 6 6 9 1.6 4.7C.4 7.1.9 10.1 2.9 12.1c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.3-2.3c.5-.4.5-1.1.1-1.4z"/></svg>
+          <span>Tools</span>
+        </div>
+      </div>
+      <div class="nav-section">
+        <div class="nav-btn">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+          <span>BTF</span>
+        </div>
+      </div>
+      <div class="nav-section">
+        <div class="nav-btn">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          <span>BORG</span>
+        </div>
+      </div>
+      <div class="nav-section">
+        <div class="nav-btn">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-1 9H9V9h10v2zm-4 4H9v-2h6v2zm4-8H9V5h10v2z"/></svg>
+          <span>vSpaces</span>
+        </div>
+      </div>
+      <div class="nav-section">
+        <div class="nav-btn">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg>
+          <span>Settings</span>
+        </div>
+      </div>
+    </aside>
+    <main class="main-area" role="main">
+      <article class="case-header">
+        <div class="case-top-row">
+          <div class="case-left">
+            <div class="case-badges">
+              <span class="status-badge">S2</span>
+              <span class="case-id">699765332</span>
+              <span class="age-badge">Age: 1d</span>
+            </div>
+            <div class="case-title-text">Windows server increase in CPU usage from AppD and OTel agents running on the same server</div>
+          </div>
+          <div class="case-right">
+            <span class="status-pill">Ext: Cisco Pending</span>
+            <div class="action-buttons">
+              <button class="btn-update">Customer Updated ▼</button>
+              <button class="btn-add-note">📝 Add Note</button>
+            </div>
+          </div>
+        </div>
+        
+        <div class="case-metadata">
+          <div class="meta-section">
+            <div class="meta-header">Keywords</div>
+            <div class="meta-content">
+              <div class="meta-item"><span class="meta-label">T:</span><span class="meta-value">AppDynamics</span></div>
+              <div class="meta-item"><span class="meta-label">ST:</span><span class="meta-value">AppDynamics - .NET</span></div>
+              <div class="meta-item"><span class="meta-label">PC:</span><span class="meta-value">Interoperability</span></div>
+              <div class="meta-item"><span class="meta-label">Tag:</span><span class="meta-value">N/A</span></div>
+            </div>
+          </div>
+          
+          <div class="meta-section">
+            <div class="meta-header">Product</div>
+            <div class="meta-content">
+              <div class="meta-item"><span class="meta-label">SN:</span><span class="meta-value">N/A</span></div>
+              <div class="meta-item"><span class="meta-label">Contract:</span><span class="meta-value">N/A</span></div>
+              <div class="meta-item"><span class="meta-label">Product ID:</span><span class="meta-value">N/A</span></div>
+              <div class="meta-item"><span class="meta-label">Node:</span><span class="meta-value">N/A</span></div>
+              <div class="meta-item"><span class="meta-label">Cross Launch:</span><span class="meta-value"><a href="#">AppDynamics</a></span></div>
+            </div>
+          </div>
+          
+          <div class="meta-section">
+            <div class="meta-header">Owner</div>
+            <div class="meta-content">
+              <div class="meta-item"><span class="meta-value">🟢 Soumyapratim Bera (soubera)</span></div>
+              <div class="meta-item"><span class="meta-value">TAC-SAAS-APPDOTNET-AMER-WEST-TCE</span></div>
+            </div>
+          </div>
+          
+          <div class="meta-section">
+            <div class="meta-header">Customer</div>
+            <div class="meta-content">
+              <div class="meta-item"><span class="meta-value">🟢 Sultan Kaja 00ujq72xsc3nbsFwJ5d7</span></div>
+              <div class="meta-item"><span class="meta-value">C3 TO BE ASSIGNED CPR COMPANY</span></div>
+              <div class="meta-item"><span class="meta-value">📞 +1 913 952 6721</span></div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="tag-row">
+          <span class="tag-chip">routing</span>
+          <span class="tag-chip">open collab</span>
+          <span class="tag-chip">on hold</span>
+          <span class="tag-chip">clone case</span>
+          <span class="tag-chip">entitlement</span>
+          <span class="tag-chip">case review</span>
+          <span class="tag-chip">team mgmt</span>
+          <span class="tag-chip">close case</span>
+          <span class="tag-chip">copilot close</span>
+        </div>
+      </article>
+
+      <section class="panel" role="region" aria-labelledby="panel-heading">
+        <header class="panel-header">
+          <div>
+            <h2 id="panel-heading" class="panel-title" style="font-size:1.55rem;">Environment Snapshot</h2>
+            <p class="panel-sub">Unified snapshot of controller environment, limits, JIRAs, clusters and tooling. Use the command bar to simulate bot queries.</p>
+          </div>
+          <form class="command-bar" onsubmit="handleCommand(event)" role="search" aria-label="Command input">
+            <label for="userInput" class="sr-only">Command</label>
+            <input id="userInput" name="command" placeholder="e.g. controllerces info or jira upgrades" autocomplete="off" />
+            <button type="submit" class="btn">Run</button>
+          </form>
+        </header>
+        <div class="divider-row" aria-hidden="true"></div>
+        <div class="grid" id="infoGrid">
+          <div class="block" id="accountInfoBlock">
+            <h3>Account Info</h3>
+            <ul class="kv-list">
+              <li><span class="kv-term">Controller:</span><a class="link" href="#">controllerces.saas.appdynamics.com</a></li>
+              <li><span class="kv-term">Account Id:</span>123456</li>
+              <li><span class="kv-term">Host:</span>pdx-p-con-207</li>
+              <li><span class="kv-term">SSH IP:</span>10.1.2.3</li>
+              <li><span class="kv-term">Version:</span>23.9.1</li>
+              <li><span class="kv-term">Global Name:</span>controllerces</li>
+              <li><span class="kv-term">EUM Name:</span>eum-controllerces</li>
+              <li><span class="kv-term">Dedicated:</span>Yes</li>
+              <li><span class="kv-term">License:</span>Premium / 500 Agents</li>
+            </ul>
+          </div>
+          <div class="block" id="settingsBlock">
+            <h3>Controller Settings</h3>
+            <ul class="kv-list">
+              <li><span class="kv-term">Timezone:</span>UTC</li>
+              <li><span class="kv-term">Retention:</span>30 days</li>
+              <li><span class="kv-term">Maint Window:</span>Sun 02:00–04:00 UTC</li>
+              <li><span class="kv-term">SSO:</span>Enabled</li>
+            </ul>
+          </div>
+          <div class="block" id="limitsBlock">
+            <h3>Limits</h3>
+            <ul class="kv-list">
+              <li><span class="kv-term">Applications:</span>100</li>
+              <li><span class="kv-term">Agents:</span>500</li>
+              <li><span class="kv-term">DB Collectors:</span>20</li>
+              <li><span class="kv-term">EUM Apps:</span>10</li>
+            </ul>
+          </div>
+          <span id="jira" class="sr-only" aria-hidden="true"></span>
+          <div class="block" id="jiraBlock">
+            <h3>JIRAs (P1)</h3>
+            <ul class="jira-list">
+              <li><a class="link" href="#">JIRA-12345</a> – Login issue</li>
+              <li><a class="link" href="#">JIRA-12346</a> – DB timeout</li>
+            </ul>
+            <div class="foot-note">For full list run: jira top / jira wfr</div>
+          </div>
+          <div class="block" id="clusterBlock">
+            <h3>Clusters</h3>
+            <ul class="kv-list">
+              <li><span class="kv-term">GAN:</span>eks1, eks2</li>
+              <li><span class="kv-term">EUM:</span>eum-eks1, eum-eks2</li>
+            </ul>
+          </div>
+          <div class="block" id="eumBlock">
+            <h3>EUM License</h3>
+            <ul class="kv-list">
+              <li><a class="link" href="https://controllerces.saas.appdynamics.com/eum/license-consumption" target="_blank" rel="noopener">Consumption Dashboard</a></li>
+            </ul>
+          </div>
+          <span id="sql" class="sr-only" aria-hidden="true"></span>
+          <div class="block responsive-span-2 sql-block" id="sqlBlock">
+            <h3>On-Demand SQL (Mock)</h3>
+            <form onsubmit="runSQL(event)">
+              <label for="sqlInput" class="sr-only">SQL Query</label>
+              <input id="sqlInput" class="sql-input" placeholder="SELECT * FROM users LIMIT 1;" />
+              <button type="submit" class="btn">Execute</button>
+            </form>
+            <pre id="sqlResult" class="sql-result" aria-live="polite"></pre>
+            <div class="foot-note">Output simulated. Secure proxy concept (no direct DB SSH).</div>
+          </div>
+        </div>
+        <div class="divider-row" aria-hidden="true"></div>
+        <section aria-labelledby="live-output-heading">
+          <h3 id="live-output-heading" class="sr-only">Command Output</h3>
+          <div id="liveOutput" class="live-output" role="log" aria-live="polite" aria-label="Command result stream">Ready. Type a command to simulate response.</div>
+        </section>
+      </section>
+    </main>
+  </div>
+  <script>
+    // Utility: append message to live output
+    function logOutput(msg) {
+      const out = document.getElementById('liveOutput');
+      const timestamp = new Date().toISOString().substring(11,19);
+      out.textContent += `\n[${timestamp}] ${msg}`;
+      out.scrollTop = out.scrollHeight;
+    }
+
+    // Simple highlight animation for blocks
+    function pulseBlock(id) {
+      const el = document.getElementById(id);
+      if(!el) return;
+      el.animate([
+        { boxShadow:'0 0 0 0 rgba(74,144,226,0.0)', background:'#fff' },
+        { boxShadow:'0 0 0 4px rgba(74,144,226,0.35)', background:'#f0f7ff' },
+        { boxShadow:'0 0 0 0 rgba(74,144,226,0.0)', background:'#fff' }
+      ], { duration:1400, easing:'ease-in-out' });
+    }
+
+    // Command routing (mock)
+    const commandHandlers = {
+      'info': () => { pulseBlock('accountInfoBlock'); return 'Controller info displayed (Account Info block highlighted).'; },
+      'limits': () => { pulseBlock('limitsBlock'); return 'Controller limits shown.'; },
+      'settings': () => { pulseBlock('settingsBlock'); return 'Controller settings highlighted.'; },
+      'jira': (tokens) => {
+        pulseBlock('jiraBlock');
+        if(tokens.includes('upgrades')) return 'Recent upgrades: 2025-09-10, 2025-08-15, 2025-07-20.';
+        if(tokens.includes('top')) return 'Top JIRAs: JIRA-12345, JIRA-56789, JIRA-13579.';
+        if(tokens.includes('wfr')) return 'Waiting For Requestor: JIRA-88888.';
+        return 'JIRA summary displayed.';
+      },
+      'clusters': () => { pulseBlock('clusterBlock'); return 'Cluster details (GAN & EUM) shown.'; },
+      'eumhealth': () => { pulseBlock('eumBlock'); return 'EUM Deeplink highlighted.'; },
+      'sql': (tokens) => { pulseBlock('sqlBlock'); return 'Use the On-Demand SQL section below to run a query.'; },
+      'help': () => 'Available: info, limits, settings, jira [upgrades|top|wfr], clusters, eumhealth, sql'
+    };
+
+    function handleCommand(e) {
+      e.preventDefault();
+      const input = document.getElementById('userInput');
+      const raw = (input.value || '').trim();
+      if(!raw) return;
+      const tokens = raw.toLowerCase().split(/\s+/);
+      const base = tokens[0].replace('@appdsupportsentinel','');
+      const handler = commandHandlers[base];
+      let response;
+      try {
+        response = handler ? handler(tokens) : `Unknown command: ${base}. Type help.`;
+      } catch(err) {
+        response = 'Error executing command (mock).';
+      }
+      logOutput(`> ${raw}`);
+      logOutput(response);
+      input.value='';
+    }
+
+    // SQL mock
+    function runSQL(event) {
+      event.preventDefault();
+      const sql = document.getElementById('sqlInput').value.trim();
+      const resultPre = document.getElementById('sqlResult');
+      if(!sql) return;
+      const mock = 'id | name  | email                \n' +
+                   '---+-------+----------------------\n' +
+                   '1  | John  | john@example.com     \n' +
+                   '2  | Alice | alice@example.com';
+      resultPre.style.display='block';
+      resultPre.textContent = mock;
+      logOutput(`Executed SQL (mock): ${sql}`);
+    }
+  </script>
+</body>
+</html>

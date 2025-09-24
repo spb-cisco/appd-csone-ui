@@ -1,0 +1,124 @@
+/* TopBar Styles */
+.topbar { 
+  position: sticky; 
+  top: 0; 
+  z-index: 50; 
+  height: 60px; 
+  background: #373c42; 
+  border-bottom: 1px solid #e1e5e9;
+  display: flex; 
+  align-items: center; 
+  padding: 0 24px; 
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
+}
+
+.cisco-logo { 
+  display: flex; 
+  align-items: center; 
+  gap: 12px; 
+  font-size: 16px; 
+  font-weight: 700; 
+  color: #ffffff !important; 
+  margin-right: 24px;
+}
+
+.cisco-logo svg { 
+  width: 32px; 
+  height: 20px; 
+}
+
+.cisco-logo * {
+  color: #ffffff !important;
+}
+
+.product-name { 
+  font-size: 16px !important; 
+  font-weight: 600 !important; 
+  color: #ffffff !important; 
+  margin-right: auto;
+  flex: 1;
+}
+
+.product-name * {
+  color: #ffffff !important;
+}
+
+.confidential-banner {
+  background: #ff4444;
+  color: white;
+  padding: 4px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  margin-right: 16px;
+  border-radius: 2px;
+  margin-left: auto;
+}
+
+.search-area {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-right: 16px;
+}
+
+.search-input {
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+  width: 300px;
+  outline: none;
+}
+
+.search-input:focus {
+  border-color: #0073e6;
+  box-shadow: 0 0 0 2px rgba(0,115,230,0.2);
+}
+
+.top-actions { 
+  display: flex; 
+  gap: 12px; 
+  align-items: center; 
+}
+
+.right-section {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-left: auto;
+}
+
+.icon-btn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: default;
+  color: #ffffff;
+  font-size: 16px;
+  pointer-events: none;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: default;
+  font-size: 14px !important;
+  color: #ffffff !important;
+  pointer-events: none;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.user-info * {
+  color: #ffffff !important;
+  font-size: 14px !important;
+}
