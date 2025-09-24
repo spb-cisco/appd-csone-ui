@@ -721,7 +721,7 @@ const EnvironmentPanel: React.FC<EnvironmentPanelProps> = ({
 
                 {/* Thread Pool % Card */}
                 <Card 
-                  accent={currentData.metrics.threadPoolBreach === 0 ? "excellent" : currentData.metrics.threadPoolBreach <= 5 ? "warning" : "negative"} 
+                  accent={currentData.metrics.threadPoolBreach === 0 ? "excellent" : currentData.metrics.threadPoolBreach <= 0 ? "warning" : "negative"} 
                   style={{ width: 200, cursor: 'pointer' }}
                   onClick={() => console.log('Thread Pool clicked')}
                 >
